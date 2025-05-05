@@ -1,0 +1,23 @@
+{
+  "name": "@phishdirectory/REPLACEMEWITHAPPNAME",
+  "private": true,
+  "version": "1.0.0",
+  "description": "REPLACEME",
+  "maintainers": [
+    {
+      "name": "Jasper Mayone",
+      "email": "me@jaspermayone.com"
+    }
+  ],
+  "scripts": {
+    "build": "bun run build",
+    "start": "bun run start"
+  },
+  "keywords": [],
+  "author": "Jasper Mayone <me@jaspermayone.com>",
+  "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
+    "@hotwired/stimulus": "^3.2.2",
+    "@hotwired/turbo-rails": "^8.0.13"
+  }
+}

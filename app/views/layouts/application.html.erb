@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#2F2F2F" />
+    <meta name="msapplication-TileColor" content="#2F2F2F" />
+    <meta name="apple-mobile-web-app-title" content="REPLACEMEWITHAPPNAME" />
+    <meta name="application-name" content="REPLACEMEWITHAPPNAME" />
+    <meta name="description" content="REPLACEME" />
+    <meta name="keywords" content="" />  <%# <REPLACE ME %>
+    <meta name="author" content="Jasper Mayone" />
+    <meta name="copyright" content="Jasper Mayone" />
+    <link rel="manifest" href="/site.webmanifest" /> %>
+    <%# <meta name="msapplication-TileImage" content="/mstile-144x144.png" /> %>
+    <meta name="theme-color" content="#2F2F2F" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title><%= content_for(:title) || "REPLACEMEWITHAPPNAME" %></title>
+    <title>
+      <%= yield(:title).concat(" ~") if content_for?(:title) %> REPLACEMEWITHAPPNAME
+    </title>
+
+    <%# <link rel="canonical" href="" />  <%# replace with your app's URL  (ex: https://veritas.phish.directory) %>
+
+    <%= yield :head %>
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <%# <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" /> %>
+    <%# <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" /> %>
+    <%# <link rel="icon" type="image/png" sizes="194x194" href="/favicon-194x194.png" /> %>
+    <%# <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" /> %>
+    <%# <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" /> %>
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <main class="container mx-auto mt-28 px-5 flex">
+      <!-- Flash messages -->
+      <% flash.each do |key, message| %>
+        <div class="<%= key == 'notice' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700' %> px-4 py-3 rounded relative w-full mb-4" role="alert">
+          <span class="block sm:inline"><%= message %></span>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+          const $notification = $delete.parentNode;
+
+          $delete.addEventListener('click', () => {
+            $notification.parentNode.removeChild($notification);
+          });
+        });
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const flash = document.getElementById('flash');
+        if (flash) {
+          setTimeout(() => {
+            flash.remove();
+          }, 5000);
+        }
+      });
+    </script>
+  </body>
+</html>
