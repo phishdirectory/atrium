@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # config/initializers/blind_index.rb
 require "blind_index"
 

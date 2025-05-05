@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Email < ApplicationRecord
   belongs_to :mailbox
   has_one :user, through: :mailbox

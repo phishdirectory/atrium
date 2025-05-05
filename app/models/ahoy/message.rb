@@ -1,9 +1,13 @@
-class Ahoy::Message < ActiveRecord::Base
-  self.table_name = "ahoy_messages"
+# frozen_string_literal: true
 
-  belongs_to :user, polymorphic: true, optional: true
+module Ahoy
+  class Message < ApplicationRecord
+    self.table_name = "ahoy_messages"
 
-  has_encrypted :to
-  blind_index :to
+    belongs_to :user, polymorphic: true, optional: true
 
+    has_encrypted :to
+    blind_index :to
+
+  end
 end

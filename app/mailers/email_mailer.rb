@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class EmailMailer < ApplicationMailer
   default from: "noreply@mail.phish.directory"
 

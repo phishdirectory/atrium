@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/controllers/emails_controller.rb
 class EmailsController < ApplicationController
   before_action :authenticate_user

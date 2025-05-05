@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/controllers/sessions_controller.rb
 class SessionsController < ApplicationController
   def new
