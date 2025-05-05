@@ -7,29 +7,29 @@ default: &default
 development:
   primary: &primary_development
     <<: *default
-    database: REPLACEMEWITHAPPNAME_development
+    database: atrium_development
   queue:
     <<: *primary_development
-    database: REPLACEMEWITHAPPNAME_development_queue
+    database: atrium_development_queue
     migrations_paths: db/queue_migrate
 
 test:
   primary: &primary_test
     <<: *default
-    database: REPLACEMEWITHAPPNAME_test
+    database: atrium_test
   queue:
     <<: *primary_test
-    database: REPLACEMEWITHAPPNAME_test_queue
+    database: atrium_test_queue
     migrations_paths: db/queue_migrate
 
 production:
   primary: &primary_production
     <<: *default
     host: db
-    database: REPLACEMEWITHAPPNAME_production
+    database: atrium_production
     username: <%= ENV['DATABASE_USER'] %>
     password: <%= ENV['DATABASE_PASSWORD'] %>
   queue:
     <<: *primary_production
-    database: REPLACEMEWITHAPPNAME_production_queue
+    database: atrium_production_queue
     migrations_paths: db/queue_migrate

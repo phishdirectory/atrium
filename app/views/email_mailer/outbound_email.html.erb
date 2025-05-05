@@ -1,0 +1,21 @@
+# app/views/email_mailer/outbound_email.html.erb
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+    <%= @email.body %>
+
+    <hr>
+    <p>
+      Sent via Atrium Email Client for phish.directory staff
+    </p>
+  </body>
+</html>
+
+# app/views/email_mailer/outbound_email.text.erb
+<%= @email.body %>
+
+--
+Sent via Atrium Email Client for phish.directory staff

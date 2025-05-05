@@ -9,7 +9,7 @@ require "rails/all"
 Bundler.require(*Rails.groups)
 
 # app name should be InThisCase
-module REPLACEMEWITHAPPNAME
+module Atrium
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
@@ -30,6 +30,8 @@ module REPLACEMEWITHAPPNAME
     config.console1984.ask_for_username_if_empty = true
     config.console1984.incinerate = false
     config.console1984.protected_environments = %i[production staging]
+
+    config.action_mailbox.ingress = :postmark
 
     # Configuration for the application, engines, and railties goes here.
     #

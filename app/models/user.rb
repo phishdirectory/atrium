@@ -4,6 +4,9 @@ class User < ApplicationRecord
   # has_paper_trail
   has_secure_password
 
+  has_one :mailbox, dependent: :destroy
+  has_many :emails, through: :mailbox
+
   enum :access_level, {
     user: 0,
     admin: 1
@@ -21,6 +24,7 @@ class User < ApplicationRecord
   scope :active, -> { last_seen_within(30.days.ago) }
   def active? = last_seen_at && (last_seen_at >= 30.days.ago)
 
+  after_create :create_default_mailbox
 
   def full_name
     "#{first_name} #{last_name}"
@@ -51,5 +55,9 @@ class User < ApplicationRecord
   end
 
   private
+
+  def create_default_mailbox
+    create_mailbox(name: "#{first_name}'s Mailbox")
+  end
 
 end

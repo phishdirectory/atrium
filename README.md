@@ -1,78 +1,140 @@
-# Template Repository
+# Atrium
 
-This is a fork of [ruby-rails-template](https://github.com/jaspermayone/ruby-rails-template) by @jaspermayone.
+Atrium is an email client for phish.directory staff. It provides a modern, user-friendly interface for sending and receiving emails with your personalized <username@mail.phish.directory> email address.
 
-## Setup Guide
+## Features
 
-### Initial Repository Setup
+- **User Authentication**: Secure login system for staff members
+- **Email Management**: Send, receive, and organize emails
+- **Conversation Threading**: View email conversations in a threaded format
+- **Rich Text Editing**: Compose emails with rich text formatting
+- **Email Organization**: Star, archive, and mark emails as read/unread
+- **Modern UI**: Clean, responsive interface using Tailwind CSS
 
-1. **Create Your Repository**
-   Click the "Use this template" button or fork this repository to get started.
+## Setup Instructions
 
-2. **Configure GitHub Settings**
+### Prerequisites
 
-   - Import the ruleset: Copy `main-ruleset.yml` from the `.github` folder into your new repository.
-   - Set up Dependabot: Rename `.github/dependabot.disabled.yml` to `.github/dependabot.yml` and update for your package ecosystem.
-   - Update code ownership: Edit `.github/CODEOWNERS` with appropriate usernames or teams.
+- Ruby 3.4.2
+- PostgreSQL
+- Rails 8.0.2
 
-3. **Customize This README**
-   - Change the title to your repository name
-   - Add a project description
-   - Include maintainer contact information
+### Installation
 
-### Application Setup
+1. Clone the repository:
 
-1. **Generate Credentials**
-
-   ```bash
-   bin/regenerate-credentials
+   ```sh
+   git clone https://github.com/phish-directory/atrium.git
+   cd atrium
    ```
 
-2. **Create Lockbox Encryption Key**
+2. Install dependencies:
 
-   ```ruby
-   # Run in Rails console
-   Lockbox.generate_key
-   ```
-
-3. **Add Key to Credentials**
-
-   ```bash
-   rails credentials:edit
-   ```
-
-   Then add:
-
-   ```yaml
-   lockbox:
-     master_key: "your_generated_key_here"
-   ```
-
-4. **Replace Placeholder Names**
-   Search for and replace all instances of "REPLACEMEWITHAPPNAME" with your application name.
-
-5. **Install Dependencies**
-
-   ```bash
+   ```sh
    bundle install
    ```
 
-### Next Steps
+3. Set up the database:
 
-You're ready to start development! Consider reviewing:
+   ```sh
+   bin/rails db:create
+   bin/rails db:migrate
+   bin/rails db:seed
+   ```
 
-- Database configuration in `config/database.yml`
-- Environment variables in `.env.example` (copy to `.env` for local development)
+4. Set up Action Text and Action Mailbox:
 
----
+   ```sj
+   bin/rails action_text:install
+   bin/rails action_mailbox:install
+   bin/rails db:migrate
+   ```
 
-## Example Readme
+5. Start the Rails server:
 
-```markdown
-# my-awesome-project
+   ```sh
+   bin/rails server
+   ```
 
-A simple tool to automate phishing domain detection.
+6. Access the application at <http://localhost:3000>
 
-Maintainer: @yourusername
-Contact: you@example.com
+### Configuration
+
+#### Email Configuration
+
+To configure Action Mailbox for receiving emails, edit your credentials:
+
+```sh
+bin/rails credentials:edit
 ```
+
+Add the following configuration:
+
+```yaml
+action_mailbox:
+  ingress_password: your_secure_password
+
+smtp_settings:
+  address: smtp.your-email-provider.com
+  port: 587
+  domain: mail.phish.directory
+  user_name: your_username
+  password: your_password
+  authentication: plain
+  enable_starttls_auto: true
+```
+
+#### Mail Routing
+
+For production, set up your mail routing to forward emails to the Action Mailbox endpoint:
+
+```txt
+https://yourdomain.com/rails/action_mailbox/postmark/inbound_emails
+```
+
+## Development
+
+### Sample Accounts
+
+After running `rails db:seed`, the following accounts will be available (only in development):
+
+- Admin User:
+
+  - Email: <admin@phish.directory>
+  - Password: password123
+
+- Regular Users:
+
+  - Email: <john@phish.directory>
+  - Password: password123
+
+  - Email: <jane@phish.directory>
+  - Password: password123
+
+### Testing Email Functionality
+
+For development, you can test email receiving functionality using:
+
+1. The Rails console:
+
+   ```ruby
+   # Create a test inbound email
+   ActionMailbox::InboundEmail.create_and_extract_message_id!(
+     from: "sender@example.com",
+     to: "username@mail.phish.directory",
+     subject: "Test Subject",
+     body: "This is a test email body."
+   )
+   ```
+
+2. Letter Opener Web (for outgoing emails):
+   - Send an email through the application
+   - View it at <http://localhost:3000/letter_opener>
+
+## License
+
+This project is licensed under the GNU General Public License v3.0.
+
+## Contact
+
+For any questions or support, please contact the phish.directory team.

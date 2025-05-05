@@ -10,10 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_03_171629) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_05_193810) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "fuzzystrmatch"
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "action_mailbox_inbound_emails", force: :cascade do |t|
+    t.integer "status", default: 0, null: false
+    t.string "message_id", null: false
+    t.string "message_checksum", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
+  end
+
+  create_table "action_text_rich_texts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "body"
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
+  end
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -216,6 +235,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_03_171629) do
     t.index ["username"], name: "index_console1984_users_on_username"
   end
 
+  create_table "emails", force: :cascade do |t|
+    t.bigint "mailbox_id", null: false
+    t.string "subject", null: false
+    t.string "sender", null: false
+    t.string "recipient", null: false
+    t.boolean "read", default: false
+    t.datetime "sent_at"
+    t.datetime "received_at"
+    t.boolean "archived", default: false
+    t.boolean "starred", default: false
+    t.string "message_id"
+    t.string "in_reply_to"
+    t.string "references"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["in_reply_to"], name: "index_emails_on_in_reply_to"
+    t.index ["mailbox_id"], name: "index_emails_on_mailbox_id"
+    t.index ["message_id"], name: "index_emails_on_message_id", unique: true
+  end
+
   create_table "flipper_features", force: :cascade do |t|
     t.string "key", null: false
     t.datetime "created_at", null: false
@@ -254,6 +293,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_03_171629) do
     t.datetime "created_at"
     t.index ["subject_type", "subject_id"], name: "index_lockbox_audits_on_subject"
     t.index ["viewer_type", "viewer_id"], name: "index_lockbox_audits_on_viewer"
+  end
+
+  create_table "mailboxes", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.string "email_address", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_address"], name: "index_mailboxes_on_email_address", unique: true
+    t.index ["user_id"], name: "index_mailboxes_on_user_id"
   end
 
   create_table "pg_search_documents", force: :cascade do |t|
@@ -311,6 +360,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_03_171629) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "emails", "mailboxes"
+  add_foreign_key "mailboxes", "users"
   add_foreign_key "user_sessions", "users"
   add_foreign_key "user_sessions", "users", column: "impersonated_by_id"
 end

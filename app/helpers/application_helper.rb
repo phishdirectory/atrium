@@ -1,8 +1,21 @@
 # frozen_string_literal: true
 
+# app/helpers/application_helper.rb
 module ApplicationHelper
-
-  include ActionView::Helpers
+  def flash_class_for(flash_type)
+    case flash_type.to_sym
+    when :notice, :success
+      "bg-green-50 border-l-4 border-green-400 text-green-800"
+    when :alert, :error
+      "bg-red-50 border-l-4 border-red-400 text-red-800"
+    when :warning
+      "bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800"
+    when :info
+      "bg-blue-50 border-l-4 border-blue-400 text-blue-800"
+    else
+      "bg-gray-50 border-l-4 border-gray-400 text-gray-800"
+    end
+  end
 
   def current_page?(path)
     request.path == path
@@ -17,52 +30,8 @@ module ApplicationHelper
   end
 
   def help_email
-    mail_to "support@jaspermayone.com"
+    mail_to "support@phish.directory"
   end
-
-  def commit_name
-    @short_hash ||= commit_hash[0...7]
-    @commit_name ||= begin
-      if commit_dirty?
-        "#{@short_hash}-dirty" # rubocop:disable Rails/HelperInstanceVariable
-      else
-        @short_hash # rubocop:disable Rails/HelperInstanceVariable
-      end
-    end
-  end
-
-  def commit_dirty?
-    ::Util.commit_dirty?
-  end
-
-  def commit_hash
-    ::Util.commit_hash
-  end
-
-  def commit_time
-    @commit_time ||= begin
-      git_time = `git log -1 --format=%at`.chomp
-
-      return nil if git_time.blank?
-
-      Time.zone.at(git_time.to_i) rescue nil # Convert the Unix epoch time to a Time object, handle error gracefully
-    end
-
-    @commit_time # rubocop:disable Rails/HelperInstanceVariable
-  end
-
-  def commit_duration
-    @commit_duration ||= begin
-      return nil if commit_time.nil?
-
-      distance_of_time_in_words(commit_time, Time.zone.now)
-    end
-
-    @commit_duration # rubocop:disable Rails/HelperInstanceVariable
-  end
-
-
-  module_function :commit_hash, :commit_time
 
   def app_version
     @app_version ||= begin
@@ -71,7 +40,7 @@ module ApplicationHelper
       else
         env = Rails.env.upcase
         time = Time.now.utc.strftime("%Y-%m-%d %H-%M UTC")
-        "#{env} @ #{time} (#{commit_name})"
+        "#{env} @ #{time}"
       end
     end
   end

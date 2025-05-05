@@ -1,0 +1,161 @@
+<div class="flex h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <div class="w-64 bg-white shadow-md hidden md:flex md:flex-col">
+    <div class="p-4 border-b">
+      <h1 class="text-xl font-bold text-gray-800">Atrium</h1>
+      <p class="text-sm text-gray-600"><%= current_user.mailbox.email_address %></p>
+    </div>
+
+    <div class="p-4">
+      <%= link_to new_email_path, class: "w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition duration-150" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" />
+        </svg>
+        Compose
+      <% end %>
+    </div>
+
+    <nav class="mt-2 flex-1 overflow-y-auto">
+      <ul>
+        <li>
+          <%= link_to emails_path(folder: 'inbox'), class: "flex items-center px-4 py-3 #{@folder == 'inbox' ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' : 'text-gray-700 hover:bg-gray-100'}" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
+            <span class="font-medium">Inbox</span>
+            <% unread_count = current_user.emails.inbox.unread.count %>
+            <% if unread_count > 0 %>
+              <span class="ml-auto bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full"><%= unread_count %></span>
+            <% end %>
+          <% end %>
+        </li>
+
+        <li>
+          <%= link_to emails_path(folder: 'sent'), class: "flex items-center px-4 py-3 #{@folder == 'sent' ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' : 'text-gray-700 hover:bg-gray-100'}" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+            </svg>
+            <span class="font-medium">Sent</span>
+          <% end %>
+        </li>
+
+        <li>
+          <%= link_to emails_path(folder: 'starred'), class: "flex items-center px-4 py-3 #{@folder == 'starred' ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' : 'text-gray-700 hover:bg-gray-100'}" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <span class="font-medium">Starred</span>
+          <% end %>
+        </li>
+
+        <li>
+          <%= link_to emails_path(folder: 'archived'), class: "flex items-center px-4 py-3 #{@folder == 'archived' ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600' : 'text-gray-700 hover:bg-gray-100'}" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
+              <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" />
+            </svg>
+            <span class="font-medium">Archived</span>
+          <% end %>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header with search -->
+    <header class="bg-white border-b p-4 flex items-center justify-between">
+      <div class="flex items-center">
+        <!-- Mobile menu button -->
+        <button class="md:hidden mr-4 text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <h2 class="text-xl font-semibold text-gray-800 capitalize">
+          <%= @folder %>
+        </h2>
+      </div>
+
+      <div class="relative max-w-md w-full">
+        <%= form_with url: emails_path, method: :get, class: "flex items-center" do |f| %>
+          <%= f.text_field :q, placeholder: "Search emails...", class: "w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+          <%= f.hidden_field :folder, value: @folder %>
+          <button type="submit" class="absolute right-0 top-0 mt-2 mr-3 text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        <% end %>
+      </div>
+
+      <div class="flex items-center">
+        <span class="text-sm text-gray-600 mr-4 hidden md:inline"><%= current_user.email %></span>
+        <%= link_to logout_path, class: "text-gray-500 hover:text-gray-700" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        <% end %>
+      </div>
+    </header>
+
+    <!-- Email list -->
+    <div class="flex-1 overflow-y-auto bg-white">
+      <% if @emails.any? %>
+        <ul class="divide-y divide-gray-200">
+          <% @emails.each do |email| %>
+            <li class="<%= email.read? ? 'bg-white' : 'bg-blue-50' %> hover:bg-gray-50 transition duration-150">
+              <%= link_to email_path(email), class: "block px-6 py-4" do %>
+                <div class="flex items-center justify-between">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                      <p class="text-sm font-medium <%= email.read? ? 'text-gray-900' : 'text-gray-900 font-semibold' %> truncate">
+                        <%= @folder == 'sent' ? email.recipient : email.sender %>
+                      </p>
+                      <p class="ml-4 text-xs text-gray-500">
+                        <% if email.received_at %>
+                          <%= time_ago_in_words(email.received_at) %> ago
+                        <% else %>
+                          <%= time_ago_in_words(email.sent_at) %> ago
+                        <% end %>
+                      </p>
+                    </div>
+
+                    <h3 class="text-sm <%= email.read? ? 'text-gray-700' : 'text-gray-900 font-semibold' %> truncate">
+                      <%= email.subject %>
+                    </h3>
+
+                    <p class="mt-1 text-xs text-gray-500 line-clamp-1">
+                      <%= email.body.to_plain_text.truncate(100) %>
+                    </p>
+                  </div>
+
+                  <div class="ml-4 flex-shrink-0 flex items-center space-x-2">
+                    <% if email.starred? %>
+                      <span class="text-yellow-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </span>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="flex flex-col items-center justify-center h-full p-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+          </svg>
+          <p class="mt-4 text-lg font-medium text-gray-600">No emails in this folder</p>
+          <p class="mt-1 text-sm text-gray-500">When you receive emails, they'll appear here</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

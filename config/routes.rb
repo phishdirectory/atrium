@@ -1,3 +1,4 @@
+# config/routes.rb
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
@@ -17,6 +18,27 @@ Rails.application.routes.draw do
   resources :sessions, only: [:destroy]
   delete "sessions", to: "sessions#destroy_all", as: "sign_out_all_sessions"
 
+  # Email routes
+  resources :emails do
+    member do
+      patch :mark_read
+      patch :mark_unread
+      patch :star
+      patch :unstar
+      patch :archive
+      patch :unarchive
+    end
+    collection do
+      get :inbox
+      get :sent
+      get :starred
+      get :archived
+    end
+  end
+
+  # Action Mailbox
+  mount ActionMailbox::Engine => "/action_mailbox"
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
@@ -31,20 +53,11 @@ Rails.application.routes.draw do
     end
   end
 
-  # # Fallback redirect if adminconstraint fails
+  # Fallback redirect if adminconstraint fails
   get "admin/*path", to: redirect("/login")
-
-
 
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
   # Defines the root path route ("/")
-  # root "articles#index"
-  root "home#index"
-
+  root "emails#index"
 end

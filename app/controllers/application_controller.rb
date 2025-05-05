@@ -1,46 +1,36 @@
-# frozen_string_literal: true
-
+# app/controllers/application_controller.rb
 class ApplicationController < ActionController::Base
   include SessionsHelper
 
-  before_action :session_timeout, if: -> { current_user }
-
-  # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  # allow_browser versions: :modern
+  # Only add the session_timeout before action if the method exists in SessionsHelper
+  before_action :check_session_timeout, if: -> { current_user && respond_to?(:session_timeout, true) }
 
   # Track papertrail edits to specific users
-  before_action :set_paper_trail_whodunnit
+  before_action :set_paper_trail_whodunnit, if: -> { respond_to?(:set_paper_trail_whodunnit, true) }
 
-  # before_action do
-  #   # Disallow indexing
-  # response.set_header("X-Robots-Tag", "noindex")
-  # end
-
-  # # Enable Rack::MiniProfiler for admins
+  # Enable Rack::MiniProfiler for admins
   before_action do
-    if current_user&.admin?
+    if defined?(Rack::MiniProfiler) && current_user&.admin?
       Rack::MiniProfiler.authorize_request
     end
   end
 
-
   helper_method :current_user
 
-  def current_user
-    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
+  def check_session_timeout
+    session_timeout if respond_to?(:session_timeout, true)
   end
 
-  def find_current_auditor
-    current_user if current_user&.superadmin?
+  def set_paper_trail_whodunnit
+    PaperTrail.request.whodunnit = current_user&.id.to_s if defined?(PaperTrail)
   end
-
 
   def user_not_authorized
     flash[:error] = "You are not authorized to perform this action."
     if current_user || !request.get?
       redirect_to root_path
     else
-      redirect_to auth_users_path(return_to: request.url)
+      redirect_to login_path(return_to: request.url)
     end
   end
 
@@ -48,13 +38,17 @@ class ApplicationController < ActionController::Base
     raise ActionController::RoutingError, "Not Found"
   end
 
-  def confetti!(emojis: nil)
-    flash[:confetti] = true
-    flash[:confetti_emojis] = emojis.join(",") if emojis
+  def authenticate_user
+    return if current_user
+
+    store_location
+    flash[:alert] = "Please log in to access this page."
+    redirect_to login_path
+
   end
 
-  def authenticate_user
-    redirect_to login_path unless current_user
+  def store_location
+    session[:return_to] = request.original_url if request.get?
   end
 
 end

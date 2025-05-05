@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  mailbox: one
+  subject: MyString
+  body: MyText
+  sender: MyString
+  recipient: MyString
+  read: false
+  sent_at: 2025-05-05 15:16:59
+  received_at: 2025-05-05 15:16:59
+
+two:
+  mailbox: two
+  subject: MyString
+  body: MyText
+  sender: MyString
+  recipient: MyString
+  read: false
+  sent_at: 2025-05-05 15:16:59
+  received_at: 2025-05-05 15:16:59

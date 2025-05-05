@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # app/controllers/sessions_controller.rb
 class SessionsController < ApplicationController
   def new
@@ -8,9 +6,10 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user = User.find_by(email: params[:email])
+    user = User.find_by(email: params[:email].downcase)
 
     if user&.authenticate(params[:password])
+      # Set up fingerprint info from params
       fingerprint_info = {
         fingerprint: params[:fingerprint],
         device_info: params[:device_info],
@@ -19,32 +18,41 @@ class SessionsController < ApplicationController
         ip: request.remote_ip
       }
 
-      session = sign_in(user: user, fingerprint_info: fingerprint_info)
-      session.touch_last_seen_at
+      # Create a session
+      user_session = sign_in(user: user, fingerprint_info: fingerprint_info)
 
-      redirect_back_or_to root_path, notice: "Successfully logged in!"
+      # Important: Set the user ID in the session
+      session[:user_id] = user.id
+
+      # Touch last seen for the session
+      user_session.touch_last_seen_at
+
+      # Debug info
+      Rails.logger.info "User logged in: #{user.id}, session: #{session[:user_id]}"
+
+      redirect_to emails_path, notice: "Successfully logged in!"
     else
       flash.now[:alert] = "Invalid email or password"
       render :new, status: :unprocessable_entity
     end
   end
 
-  def destroy_all
-    sign_out_of_all_sessions
-    redirect_to profile_path, notice: "All other sessions have been signed out."
-  end
-
   def destroy
     session_id = params[:id]
 
-    if session_id == "current"
+    if session_id == "current" || session_id.nil?
       sign_out
-      redirect_to root_path, notice: "You have been successfully signed out."
+      redirect_to login_path, notice: "You have been successfully signed out."
     else
       session = current_user.user_sessions.find(session_id)
       session.update(signed_out_at: Time.current, expiration_at: Time.current)
-      redirect_to profile_path, notice: "Session has been revoked."
+      redirect_to root_path, notice: "Session has been revoked."
     end
+  end
+
+  def destroy_all
+    sign_out_of_all_sessions
+    redirect_to root_path, notice: "All other sessions have been signed out."
   end
 
   private
