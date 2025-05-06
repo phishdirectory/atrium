@@ -3,7 +3,6 @@
 # app/controllers/emails_controller.rb
 class EmailsController < ApplicationController
   before_action :authenticate_user
-  # Make sure set_email is called before the update action
   before_action :set_email, only: [:show, :update, :destroy, :mark_read, :mark_unread, :star, :unstar, :archive, :unarchive]
 
   def index
@@ -21,6 +20,19 @@ class EmailsController < ApplicationController
               else
                 current_user.emails.where.not(received_at: nil).order(received_at: :desc)
               end
+
+    # If there are emails, select the first one by default for the split view
+    @email = @emails.first if @emails.any? && !params[:id]
+
+    # Load conversation for the selected email
+    if @email&.message_id.present?
+      @conversation = current_user.emails
+                                  .where("message_id = ? OR in_reply_to = ? OR \"references\" LIKE ?",
+                                         @email.message_id,
+                                         @email.message_id,
+                                         "%#{@email.message_id}%")
+                                  .order(created_at: :asc)
+    end
 
     @emails = @emails.page(params[:page]).per(20) if defined?(Kaminari)
   end
@@ -40,6 +52,12 @@ class EmailsController < ApplicationController
     else
       @conversation = []
     end
+
+    # Respond to Turbo Frame requests
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
   end
 
   def new
@@ -53,7 +71,6 @@ class EmailsController < ApplicationController
     @email.recipient = original.sender
     @email.in_reply_to = original.message_id
     @email.references = [original.references, original.message_id].compact.join(" ")
-
   end
 
   def create
@@ -72,7 +89,6 @@ class EmailsController < ApplicationController
     end
   end
 
-  # Add this method which is referenced in before_action but was missing
   def update
     if @email.update(email_params)
       redirect_to @email, notice: "Email was successfully updated."
@@ -118,7 +134,6 @@ class EmailsController < ApplicationController
 
   private
 
-  # This is the callback method referenced in before_action
   def set_email
     @email = current_user.emails.find(params[:id])
   rescue ActiveRecord::RecordNotFound

@@ -8,3 +8,81 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+/* Add these styles to your application.css or a separate CSS file */
+
+/* Email list item styles */
+.email-list-item {
+  transition: all 0.2s ease;
+}
+
+.email-list-item:hover {
+  background-color: rgba(243, 244, 246, 1);
+}
+
+.email-list-item.active {
+  background-color: rgba(239, 246, 255, 1);
+  border-left: 4px solid rgba(37, 99, 235, 1);
+}
+
+/* Split view layout */
+.split-view {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.split-view-list {
+  width: 33%;
+  border-right: 1px solid rgba(229, 231, 235, 1);
+  overflow-y: auto;
+}
+
+.split-view-content {
+  width: 67%;
+  overflow-y: auto;
+}
+
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+  .split-view {
+    flex-direction: column;
+  }
+
+  .split-view-list,
+  .split-view-content {
+    width: 100%;
+    height: 50%;
+  }
+
+  .split-view-list {
+    border-right: none;
+    border-bottom: 1px solid rgba(229, 231, 235, 1);
+  }
+}
+
+/* Email content transitions */
+.email-content-container {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.email-content-container.loading {
+  opacity: 0.6;
+}
+
+/* Email action buttons */
+.email-action-button {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.15s ease-in-out;
+}
+
+.email-action-button svg {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
+}

@@ -1,3 +1,4 @@
+```erb
 <div class="flex h-screen bg-gray-50">
   <!-- Sidebar -->
   <div class="w-64 bg-white shadow-md hidden md:flex md:flex-col">
@@ -77,6 +78,13 @@
         <h2 class="text-xl font-semibold text-gray-800 capitalize">
           <%= @folder %>
         </h2>
+
+        <!-- Mobile view toggle button (visible only on mobile) -->
+        <button class="mobile-view-toggle md:hidden ml-4 bg-gray-100 text-gray-700 p-2 rounded-md">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
       </div>
 
       <div class="relative max-w-md w-full">
@@ -101,61 +109,87 @@
       </div>
     </header>
 
-    <!-- Email list -->
-    <div class="flex-1 overflow-y-auto bg-white">
-      <% if @emails.any? %>
-        <ul class="divide-y divide-gray-200">
-          <% @emails.each do |email| %>
-            <li class="<%= email.read? ? 'bg-white' : 'bg-blue-50' %> hover:bg-gray-50 transition duration-150">
-              <%= link_to email_path(email), class: "block px-6 py-4" do %>
-                <div class="flex items-center justify-between">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-1">
-                      <p class="text-sm font-medium <%= email.read? ? 'text-gray-900' : 'text-gray-900 font-semibold' %> truncate">
-                        <%= @folder == 'sent' ? email.recipient : email.sender %>
-                      </p>
-                      <p class="ml-4 text-xs text-gray-500">
-                        <% if email.received_at %>
-                          <%= time_ago_in_words(email.received_at) %> ago
-                        <% else %>
-                          <%= time_ago_in_words(email.sent_at) %> ago
-                        <% end %>
+    <!-- Split view layout using the stimulus controller -->
+    <div class="flex flex-1 overflow-hidden split-view" data-controller="email-list">
+      <!-- Email list column -->
+      <div class="w-1/3 border-r overflow-y-auto bg-white split-view-list" data-email-list-target="list">
+        <% if @emails.any? %>
+          <ul class="divide-y divide-gray-200">
+            <% @emails.each do |email| %>
+              <li
+                class="<%= email.read? ? 'bg-white' : 'bg-blue-50' %> hover:bg-gray-50 transition duration-150 <%= 'active' if @email&.id == email.id %> email-list-item"
+                data-email-list-target="item"
+                data-email-id="<%= email.id %>"
+                data-action="click->email-list#select"
+                >
+                <%= link_to email_path(email), data: { turbo_frame: "email_content" } do %>
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between mb-1">
+                        <p class="text-sm font-medium <%= email.read? ? 'text-gray-900' : 'text-gray-900 font-semibold' %> truncate">
+                          <%= @folder == 'sent' ? email.recipient : email.sender %>
+                        </p>
+                        <p class="ml-4 text-xs text-gray-500">
+                          <% if email.received_at %>
+                            <%= time_ago_in_words(email.received_at) %> ago
+                          <% else %>
+                            <%= time_ago_in_words(email.sent_at) %> ago
+                          <% end %>
+                        </p>
+                      </div>
+
+                      <h3 class="text-sm <%= email.read? ? 'text-gray-700' : 'text-gray-900 font-semibold' %> truncate">
+                        <%= email.subject %>
+                      </h3>
+
+                      <p class="mt-1 text-xs text-gray-500 line-clamp-1">
+                        <%= email.body.to_plain_text.truncate(50) %>
                       </p>
                     </div>
 
-                    <h3 class="text-sm <%= email.read? ? 'text-gray-700' : 'text-gray-900 font-semibold' %> truncate">
-                      <%= email.subject %>
-                    </h3>
-
-                    <p class="mt-1 text-xs text-gray-500 line-clamp-1">
-                      <%= email.body.to_plain_text.truncate(100) %>
-                    </p>
+                    <div class="ml-4 flex-shrink-0 flex items-center space-x-2">
+                      <% if email.starred? %>
+                        <span class="text-yellow-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </span>
+                      <% end %>
+                    </div>
                   </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div class="flex flex-col items-center justify-center h-full p-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
+            <p class="mt-4 text-lg font-medium text-gray-600">No emails in this folder</p>
+            <p class="mt-1 text-sm text-gray-500">When you receive emails, they'll appear here</p>
+          </div>
+        <% end %>
+      </div>
 
-                  <div class="ml-4 flex-shrink-0 flex items-center space-x-2">
-                    <% if email.starred? %>
-                      <span class="text-yellow-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      </span>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
-            </li>
+      <!-- Email content column -->
+      <div class="w-2/3 overflow-y-auto bg-white split-view-content email-content-container" data-email-list-target="content">
+        <%= turbo_frame_tag "email_content" do %>
+          <% if @email.present? %>
+            <%= render "emails/show", email: @email, conversation: @conversation %>
+          <% else %>
+            <div class="flex flex-col items-center justify-center h-full p-6 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+              </svg>
+              <p class="mt-4 text-lg font-medium text-gray-600">Select an email to read</p>
+              <p class="mt-1 text-sm text-gray-500">Click on an email from the list to view its contents</p>
+            </div>
           <% end %>
-        </ul>
-      <% else %>
-        <div class="flex flex-col items-center justify-center h-full p-6">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-          </svg>
-          <p class="mt-4 text-lg font-medium text-gray-600">No emails in this folder</p>
-          <p class="mt-1 text-sm text-gray-500">When you receive emails, they'll appear here</p>
-        </div>
-      <% end %>
+        <% end %>
+      </div>
     </div>
   </div>
 </div>
