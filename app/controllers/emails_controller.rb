@@ -10,7 +10,7 @@ class EmailsController < ApplicationController
 
     @emails = case @folder
               when "inbox"
-                current_user.emails.where.not(received_at: nil).order(received_at: :desc)
+                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc)
               when "sent"
                 current_user.emails.where.not(sent_at: nil).order(sent_at: :desc)
               when "starred"
@@ -18,7 +18,7 @@ class EmailsController < ApplicationController
               when "archived"
                 current_user.emails.where(archived: true).order(created_at: :desc)
               else
-                current_user.emails.where.not(received_at: nil).order(received_at: :desc)
+                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc)
               end
 
     # If there are emails, select the first one by default for the split view
@@ -34,10 +34,17 @@ class EmailsController < ApplicationController
                                   .order(created_at: :asc)
     end
 
+    # Support pagination if Kaminari is available
     @emails = @emails.page(params[:page]).per(20) if defined?(Kaminari)
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
   end
 
   def show
+    # Mark as read if it's an incoming email and not already read
     @email.update(read: true) if @email.received_at.present? && !@email.read?
 
     # Load conversation thread if any
@@ -53,7 +60,7 @@ class EmailsController < ApplicationController
       @conversation = []
     end
 
-    # Respond to Turbo Frame requests
+    # Respond to different formats
     respond_to do |format|
       format.html
       format.turbo_stream
@@ -99,37 +106,65 @@ class EmailsController < ApplicationController
 
   def destroy
     @email.destroy
-    redirect_to emails_path, notice: "Email was successfully deleted."
+
+    respond_to do |format|
+      format.html { redirect_to emails_path, notice: "Email was successfully deleted." }
+      format.turbo_stream { redirect_to emails_path, notice: "Email was successfully deleted." }
+    end
   end
 
   def mark_read
     @email.update(read: true)
-    redirect_back(fallback_location: emails_path)
+
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: emails_path) }
+      format.turbo_stream { head :ok }
+    end
   end
 
   def mark_unread
     @email.update(read: false)
-    redirect_back(fallback_location: emails_path)
+
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: emails_path) }
+      format.turbo_stream { head :ok }
+    end
   end
 
   def star
     @email.update(starred: true)
-    redirect_back(fallback_location: emails_path)
+
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: emails_path) }
+      format.turbo_stream { head :ok }
+    end
   end
 
   def unstar
     @email.update(starred: false)
-    redirect_back(fallback_location: emails_path)
+
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: emails_path) }
+      format.turbo_stream { head :ok }
+    end
   end
 
   def archive
     @email.update(archived: true)
-    redirect_back(fallback_location: emails_path)
+
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: emails_path) }
+      format.turbo_stream { head :ok }
+    end
   end
 
   def unarchive
     @email.update(archived: false)
-    redirect_back(fallback_location: emails_path)
+
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: emails_path) }
+      format.turbo_stream { head :ok }
+    end
   end
 
   private

@@ -5,6 +5,7 @@ export default class extends Controller {
   static targets = ["list", "content", "item"]
 
   connect() {
+    console.log("Email list controller connected")
     // Mark the first email as active by default if none is selected
     if (this.hasItemTarget && !this.activeItem) {
       this.itemTargets[0]?.classList.add("active")
@@ -16,12 +17,23 @@ export default class extends Controller {
 
   // Handle selecting an email in the list
   select(event) {
-    // Don't interfere with links or buttons inside the email item
-    if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON') {
+    // Allow the link to handle the click if it's the target
+    if (event.target.tagName === 'A' ||
+      event.target.closest('a') ||
+      event.target.tagName === 'BUTTON') {
       return
     }
 
+    // Prevent the default behavior to avoid full page navigation
+    event.preventDefault()
+
     const item = event.currentTarget
+
+    // Find the link inside this item and trigger it
+    const link = item.querySelector('a[data-turbo-frame="email_content"]')
+    if (link) {
+      link.click()
+    }
 
     // Update active state
     this.itemTargets.forEach(el => {
@@ -38,20 +50,11 @@ export default class extends Controller {
 
   // Monitor frame loads to update UI accordingly
   observeFrameLoads() {
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          this.updateActiveState()
-        }
+    document.addEventListener('turbo:frame-load', (event) => {
+      if (event.target.id === 'email_content') {
+        this.updateActiveState()
       }
     })
-
-    if (this.hasContentTarget) {
-      observer.observe(this.contentTarget, {
-        childList: true,
-        subtree: true
-      })
-    }
   }
 
   // Update which email is active based on the current content

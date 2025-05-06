@@ -1,4 +1,3 @@
-```erb
 <div class="flex h-screen bg-gray-50">
   <!-- Sidebar -->
   <div class="w-64 bg-white shadow-md hidden md:flex md:flex-col">
@@ -117,12 +116,11 @@
           <ul class="divide-y divide-gray-200">
             <% @emails.each do |email| %>
               <li
-                class="<%= email.read? ? 'bg-white' : 'bg-blue-50' %> hover:bg-gray-50 transition duration-150 <%= 'active' if @email&.id == email.id %> email-list-item"
+                class="<%= email.read? ? 'bg-white' : 'bg-blue-50' %> <%= 'active' if @email&.id == email.id %> email-list-item"
                 data-email-list-target="item"
                 data-email-id="<%= email.id %>"
-                data-action="click->email-list#select"
                 >
-                <%= link_to email_path(email), data: { turbo_frame: "email_content" } do %>
+                <%= link_to emails_path(id: email.id, folder: @folder), class: "block p-4 hover:bg-gray-50", data: { turbo_frame: "email_content" } do %>
                   <div class="flex items-center justify-between">
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center justify-between mb-1">
@@ -174,7 +172,7 @@
       </div>
 
       <!-- Email content column -->
-      <div class="w-2/3 overflow-y-auto bg-white split-view-content email-content-container" data-email-list-target="content">
+      <div class="w-2/3 overflow-y-auto bg-white split-view-content" data-email-list-target="content">
         <%= turbo_frame_tag "email_content" do %>
           <% if @email.present? %>
             <%= render "emails/show", email: @email, conversation: @conversation %>
