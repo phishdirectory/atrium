@@ -13,6 +13,35 @@ export default class extends Controller {
 
     // Watch for frame updates
     this.observeFrameLoads()
+
+    // Check if there's an email ID in the URL and select it
+    this.selectEmailFromUrl()
+  }
+
+  // New method to handle URL parameters
+  selectEmailFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search)
+    const emailId = urlParams.get('id')
+
+    if (emailId && this.hasItemTarget) {
+      // Find the email item with this ID
+      const item = this.itemTargets.find(el => el.dataset.emailId === emailId)
+      if (item) {
+        // Clear other active states
+        this.itemTargets.forEach(el => {
+          el.classList.remove("active")
+        })
+
+        // Set this item as active
+        item.classList.add("active")
+
+        // Trigger the content load
+        const link = item.querySelector('a[data-turbo-frame="email_content"]')
+        if (link) {
+          link.click()
+        }
+      }
+    }
   }
 
   // Handle selecting an email in the list
@@ -32,6 +61,7 @@ export default class extends Controller {
     // Find the link inside this item and trigger it
     const link = item.querySelector('a[data-turbo-frame="email_content"]')
     if (link) {
+      // Use click() instead of manually constructing a visit
       link.click()
     }
 

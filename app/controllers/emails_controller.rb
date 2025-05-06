@@ -10,19 +10,24 @@ class EmailsController < ApplicationController
 
     @emails = case @folder
               when "inbox"
-                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc)
+                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc).includes(:rich_text_body)
               when "sent"
-                current_user.emails.where.not(sent_at: nil).order(sent_at: :desc)
+                current_user.emails.where.not(sent_at: nil).order(sent_at: :desc).includes(:rich_text_body)
               when "starred"
-                current_user.emails.where(starred: true).order(created_at: :desc)
+                current_user.emails.where(starred: true).order(created_at: :desc).includes(:rich_text_body)
               when "archived"
-                current_user.emails.where(archived: true).order(created_at: :desc)
+                current_user.emails.where(archived: true).order(created_at: :desc).includes(:rich_text_body)
               else
-                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc)
+                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc).includes(:rich_text_body)
               end
 
-    # If there are emails, select the first one by default for the split view
-    @email = @emails.first if @emails.any? && !params[:id]
+    # If there's an ID param, find that specific email
+    if params[:id].present?
+      @email = current_user.emails.find_by(id: params[:id])
+    end
+
+    # If no email is selected yet, use the first one
+    @email ||= @emails.first if @emails.any?
 
     # Load conversation for the selected email
     if @email&.message_id.present?
@@ -32,6 +37,11 @@ class EmailsController < ApplicationController
                                          @email.message_id,
                                          "%#{@email.message_id}%")
                                   .order(created_at: :asc)
+    end
+
+    # Mark as read if it's an incoming email and not already read
+    if @email&.received_at.present? && !@email&.read?
+      @email.update(read: true)
     end
 
     # Support pagination if Kaminari is available

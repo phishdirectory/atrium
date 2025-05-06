@@ -119,6 +119,7 @@
                 class="<%= email.read? ? 'bg-white' : 'bg-blue-50' %> <%= 'active' if @email&.id == email.id %> email-list-item"
                 data-email-list-target="item"
                 data-email-id="<%= email.id %>"
+                data-action="click->email-list#select">
                 >
                 <%= link_to emails_path(id: email.id, folder: @folder), class: "block p-4 hover:bg-gray-50", data: { turbo_frame: "email_content" } do %>
                   <div class="flex items-center justify-between">
@@ -173,7 +174,7 @@
 
       <!-- Email content column -->
       <div class="w-2/3 overflow-y-auto bg-white split-view-content" data-email-list-target="content">
-        <%= turbo_frame_tag "email_content" do %>
+        <%= turbo_frame_tag "email_content", src: @email.present? ? email_path(@email, format: :turbo_stream) : nil do %>
           <% if @email.present? %>
             <%= render "emails/show", email: @email, conversation: @conversation %>
           <% else %>
