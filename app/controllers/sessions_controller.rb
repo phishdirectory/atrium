@@ -4,14 +4,15 @@
 class SessionsController < ApplicationController
   def new
     # Login form
-    redirect_to root_path if current_user
+    redirect_to root_path if current_session
   end
 
   def create
-    user = User.find_by(email: params[:email].downcase)
+    # Authenticate using the external API service
+    user_data = AuthService.authenticate(params[:email], params[:password])
 
-    if user&.authenticate(params[:password])
-      # Set up fingerprint info from params
+    if user_data
+      # Create a session for the authenticated user
       fingerprint_info = {
         fingerprint: params[:fingerprint],
         device_info: params[:device_info],
@@ -20,41 +21,47 @@ class SessionsController < ApplicationController
         ip: request.remote_ip
       }
 
-      # Create a session
-      user_session = sign_in(user: user, fingerprint_info: fingerprint_info)
+      session = sign_in(user_data: user_data, fingerprint_info: fingerprint_info)
+      session.touch_last_seen_at
 
-      # Important: Set the user ID in the session
-      session[:user_id] = user.id
-
-      # Touch last seen for the session
-      user_session.touch_last_seen_at
-
-      # Debug info
-      Rails.logger.info "User logged in: #{user.id}, session: #{session[:user_id]}"
-
-      redirect_to emails_path, notice: "Successfully logged in!"
+      redirect_back_or_to root_path, notice: "Successfully logged in!"
     else
       flash.now[:alert] = "Invalid email or password"
       render :new, status: :unprocessable_entity
     end
   end
 
+  def destroy_all
+    sign_out_of_all_sessions
+    redirect_to profile_path, notice: "All other sessions have been signed out."
+  end
+
   def destroy
     session_id = params[:id]
 
-    if session_id == "current" || session_id.nil?
+    if session_id == "current"
       sign_out
-      redirect_to login_path, notice: "You have been successfully signed out."
+      redirect_to root_path, notice: "You have been successfully signed out."
     else
-      session = current_user.user_sessions.find(session_id)
-      session.update(signed_out_at: Time.current, expiration_at: Time.current)
-      redirect_to root_path, notice: "Session has been revoked."
-    end
-  end
+      # Find the session by ID directly using User::Session model
+      # First, get the pd_id from the current session
+      pd_id = current_session&.pd_id
 
-  def destroy_all
-    sign_out_of_all_sessions
-    redirect_to root_path, notice: "All other sessions have been signed out."
+      if pd_id
+        # Find the session belonging to the current user's pd_id
+        session = UserSession.where(pd_id: pd_id).find_by(id: session_id)
+
+        if session
+          session.update(signed_out_at: Time.current, expiration_at: Time.current)
+          redirect_to profile_path, notice: "Session has been revoked."
+        else
+          redirect_to profile_path, alert: "Session not found."
+        end
+      else
+        sign_out
+        redirect_to root_path, alert: "Your session has expired. Please sign in again."
+      end
+    end
   end
 
   private

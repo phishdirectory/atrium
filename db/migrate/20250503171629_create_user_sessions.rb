@@ -1,8 +1,8 @@
 class CreateUserSessions < ActiveRecord::Migration[8.0]
   def change
     create_table :user_sessions do |t|
-      t.references :user, null: false, foreign_key: true
-      t.references :impersonated_by, foreign_key: { to_table: :users }, null: true
+      t.string :pd_id, null: false
+      t.text :user_data_ciphertext
       t.string :session_token_ciphertext
       t.string :session_token_bidx
       t.string :fingerprint
@@ -18,5 +18,7 @@ class CreateUserSessions < ActiveRecord::Migration[8.0]
       t.float :longitude
       t.timestamps
     end
+
+    add_index :user_sessions, :pd_id
   end
 end

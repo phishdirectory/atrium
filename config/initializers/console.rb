@@ -8,7 +8,7 @@ Rails.application.configure do
         until user.present?
           Rails.logger.debug "What is your email (used by PaperTrail to record who changed records)? "
           email = gets.chomp
-          user = User.find_by(email:)
+          user = Profile.find_by(email:)
         end
         Rails.logger.debug { "Thank you, #{user.name}! Have a wonderful time!" }
         user.id

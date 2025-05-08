@@ -10,20 +10,20 @@ class EmailsController < ApplicationController
 
     @emails = case @folder
               when "inbox"
-                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc).includes(:rich_text_body)
+                current_session.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc).includes(:rich_text_body)
               when "sent"
-                current_user.emails.where.not(sent_at: nil).order(sent_at: :desc).includes(:rich_text_body)
+                current_session.emails.where.not(sent_at: nil).order(sent_at: :desc).includes(:rich_text_body)
               when "starred"
-                current_user.emails.where(starred: true).order(created_at: :desc).includes(:rich_text_body)
+                current_session.emails.where(starred: true).order(created_at: :desc).includes(:rich_text_body)
               when "archived"
-                current_user.emails.where(archived: true).order(created_at: :desc).includes(:rich_text_body)
+                current_session.emails.where(archived: true).order(created_at: :desc).includes(:rich_text_body)
               else
-                current_user.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc).includes(:rich_text_body)
+                current_session.emails.where.not(received_at: nil).where(archived: false).order(received_at: :desc).includes(:rich_text_body)
               end
 
     # If there's an ID param, find that specific email
     if params[:id].present?
-      @email = current_user.emails.find_by(id: params[:id])
+      @email = current_session.emails.find_by(id: params[:id])
     end
 
     # If no email is selected yet, use the first one
@@ -31,12 +31,12 @@ class EmailsController < ApplicationController
 
     # Load conversation for the selected email
     if @email&.message_id.present?
-      @conversation = current_user.emails
-                                  .where("message_id = ? OR in_reply_to = ? OR \"references\" LIKE ?",
-                                         @email.message_id,
-                                         @email.message_id,
-                                         "%#{@email.message_id}%")
-                                  .order(created_at: :asc)
+      @conversation = current_session.emails
+                                     .where("message_id = ? OR in_reply_to = ? OR \"references\" LIKE ?",
+                                            @email.message_id,
+                                            @email.message_id,
+                                            "%#{@email.message_id}%")
+                                     .order(created_at: :asc)
     end
 
     # Mark as read if it's an incoming email and not already read
@@ -60,12 +60,12 @@ class EmailsController < ApplicationController
     # Load conversation thread if any
     if @email.message_id.present?
       # Use proper quoting for the 'references' column name
-      @conversation = current_user.emails
-                                  .where("message_id = ? OR in_reply_to = ? OR \"references\" LIKE ?",
-                                         @email.message_id,
-                                         @email.message_id,
-                                         "%#{@email.message_id}%")
-                                  .order(created_at: :asc)
+      @conversation = current_session.emails
+                                     .where("message_id = ? OR in_reply_to = ? OR \"references\" LIKE ?",
+                                            @email.message_id,
+                                            @email.message_id,
+                                            "%#{@email.message_id}%")
+                                     .order(created_at: :asc)
     else
       @conversation = []
     end
@@ -83,7 +83,7 @@ class EmailsController < ApplicationController
     # Handle reply
     return unless params[:reply_to]
 
-    original = current_user.emails.find(params[:reply_to])
+    original = current_session.emails.find(params[:reply_to])
     @email.subject = "Re: #{original.subject}" unless original.subject.start_with?("Re:")
     @email.recipient = original.sender
     @email.in_reply_to = original.message_id
@@ -91,7 +91,7 @@ class EmailsController < ApplicationController
   end
 
   def create
-    @email = current_user.mailbox.emails.new(email_params)
+    @email = current_session.mailbox.emails.new(email_params)
     @email.sender = current_user.mailbox.email_address
     @email.message_id = "<#{SecureRandom.uuid}@mail.phish.directory>"
     @email.sent_at = Time.current
@@ -180,7 +180,7 @@ class EmailsController < ApplicationController
   private
 
   def set_email
-    @email = current_user.emails.find(params[:id])
+    @email = current_session.emails.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     flash[:alert] = "Email not found."
     redirect_to emails_path

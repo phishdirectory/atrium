@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_05_193810) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_08_154243) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "fuzzystrmatch"
   enable_extension "pg_catalog.plpgsql"
@@ -296,13 +296,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_05_193810) do
   end
 
   create_table "mailboxes", force: :cascade do |t|
-    t.bigint "user_id", null: false
     t.string "name", null: false
     t.string "email_address", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "profile_id", null: false
     t.index ["email_address"], name: "index_mailboxes_on_email_address", unique: true
-    t.index ["user_id"], name: "index_mailboxes_on_user_id"
+    t.index ["profile_id"], name: "index_mailboxes_on_profile_id"
   end
 
   create_table "pg_search_documents", force: :cascade do |t|
@@ -314,9 +314,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_05_193810) do
     t.index ["searchable_type", "searchable_id"], name: "index_pg_search_documents_on_searchable"
   end
 
+  create_table "profiles", force: :cascade do |t|
+    t.string "pd_id"
+    t.string "email"
+    t.string "first_name"
+    t.string "last_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pd_id"], name: "index_profiles_on_pd_id"
+  end
+
   create_table "user_sessions", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.bigint "impersonated_by_id"
+    t.string "pd_id", null: false
+    t.text "user_data_ciphertext"
     t.string "session_token_ciphertext"
     t.string "session_token_bidx"
     t.string "fingerprint"
@@ -332,20 +342,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_05_193810) do
     t.float "longitude"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["impersonated_by_id"], name: "index_user_sessions_on_impersonated_by_id"
-    t.index ["user_id"], name: "index_user_sessions_on_user_id"
-  end
-
-  create_table "users", force: :cascade do |t|
-    t.string "first_name"
-    t.string "last_name"
-    t.string "email", null: false
-    t.string "password_digest", null: false
-    t.integer "access_level", default: 0, null: false
-    t.boolean "pretend_is_not_admin", default: false, null: false
-    t.integer "session_duration_seconds", default: 2592000, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.index ["pd_id"], name: "index_user_sessions_on_pd_id"
   end
 
   create_table "versions", force: :cascade do |t|
@@ -361,7 +358,4 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_05_193810) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "emails", "mailboxes"
-  add_foreign_key "mailboxes", "users"
-  add_foreign_key "user_sessions", "users"
-  add_foreign_key "user_sessions", "users", column: "impersonated_by_id"
 end
