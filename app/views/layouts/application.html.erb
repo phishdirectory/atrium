@@ -90,7 +90,7 @@
       <div class="bg-indigo-600 text-white p-2 text-xs">
         <strong>Debug:</strong>
         User ID: <%= session[:user_id] || 'nil' %> |
-        Current User: <%= current_user&.email || 'nil' %> |
+        Current User: <%= current_profile&.email || 'nil' %> |
         Session Token: <%= cookies.encrypted[:session_token] ? 'Set' : 'nil' %>
       </div>
     <% end %>

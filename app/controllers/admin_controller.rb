@@ -20,10 +20,4 @@ class AdminController < ApplicationController
     redirect_to root_path, alert: "You don't have permission to access this area." unless current_session&.admin?
   end
 
-  def current_user
-    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
-  end
-
-  helper_method :current_user
-
 end

@@ -19,7 +19,7 @@
         </div>
 
         <div class="mt-1 flex items-center text-sm text-gray-500">
-          <span>To: <%= email.received_at.present? ? current_user.mailbox.email_address : email.recipient %></span>
+          <span>To: <%= email.received_at.present? ? current_profile.mailbox.email_address : email.recipient %></span>
         </div>
 
         <div class="mt-2">

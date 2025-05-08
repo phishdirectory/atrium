@@ -8,7 +8,7 @@
     <div class="w-64 bg-white shadow-md hidden md:flex md:flex-col">
       <div class="p-4 border-b">
         <h1 class="text-xl font-bold text-gray-800">Atrium</h1>
-        <p class="text-sm text-gray-600"><%= current_user.mailbox.email_address %></p>
+        <p class="text-sm text-gray-600"><%= current_profile.mailbox.email_address %></p>
       </div>
 
       <div class="p-4">
@@ -29,7 +29,7 @@
                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
               </svg>
               <span class="font-medium">Inbox</span>
-              <% unread_count = current_user.emails.inbox.unread.count %>
+              <% unread_count = current_profile.emails.inbox.unread.count %>
               <% if unread_count > 0 %>
                 <span class="ml-auto bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full"><%= unread_count %></span>
               <% end %>
