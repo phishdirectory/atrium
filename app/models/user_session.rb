@@ -1,6 +1,33 @@
 # frozen_string_literal: true
 
 # app/models/user_session.rb
+# == Schema Information
+#
+# Table name: user_sessions
+#
+#  id                       :bigint           not null, primary key
+#  device_info              :string
+#  expiration_at            :datetime         not null
+#  fingerprint              :string
+#  ip                       :string
+#  last_seen_at             :datetime
+#  latitude                 :float
+#  longitude                :float
+#  os_info                  :string
+#  session_token_bidx       :string
+#  session_token_ciphertext :string
+#  signed_out_at            :datetime
+#  string                   :string
+#  timezone                 :string
+#  user_data_ciphertext     :text
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  pd_id                    :string           not null
+#
+# Indexes
+#
+#  index_user_sessions_on_pd_id  (pd_id)
+#
 class UserSession < ApplicationRecord
   has_encrypted :session_token
   blind_index :session_token

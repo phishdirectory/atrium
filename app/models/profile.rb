@@ -1,5 +1,21 @@
 # frozen_string_literal: true
 
+# == Schema Information
+#
+# Table name: profiles
+#
+#  id         :bigint           not null, primary key
+#  email      :string
+#  first_name :string
+#  last_name  :string
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  pd_id      :string
+#
+# Indexes
+#
+#  index_profiles_on_pd_id  (pd_id)
+#
 class Profile < ApplicationRecord
   validates :pd_id, presence: true, uniqueness: true
   has_many :user_sessions, primary_key: :pd_id, foreign_key: :pd_id, dependent: :destroy, inverse_of: :profile
